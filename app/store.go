@@ -51,7 +51,7 @@ func (s *Store) load() error {
 	}
 	for _, n := range notes {
 		s.notes[n.ID] = n
-		if n.ID >= s.nextID {
+		if n.ID > s.nextID {
 			s.nextID = n.ID + 1
 		}
 	}
