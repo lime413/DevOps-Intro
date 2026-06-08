@@ -100,3 +100,7 @@ Date:   Mon Jun 8 21:49:08 2026 +0300
 ![screenshot with Verified badge](image.png)
 
 Signed commits matter because they prove that a commit was created with a trusted private key and was not changed after signing. In the xz-utils case in March 2024, malicious code was added through a trusted open source project, so strong identity checks would help reviewers see who made sensitive changes. Signing does not make code safe by itself, but it adds an important layer of trust and accountability.
+
+## GitHub Community
+
+Starring repositories matters in open source because it helps people save useful projects, shows interest in the project, and gives maintainers more visibility. Following developers helps in team projects and professional growth because you can see their work, learn from their activity, and stay connected with classmates or future collaborators.
