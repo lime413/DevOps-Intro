@@ -304,29 +304,88 @@ I use merge when I want to keep the full branch history and avoid rewriting comm
 
 ### B.1: Set up bisect
 
-Insert the output of:
-
 ```text
-git fetch upstream
-git switch -c bisect-quickn upstream/bug/bisect-me
-git bisect start
-git bisect bad HEAD
-git bisect good v0.0.1
+tatyana@Tatyanas-MacBook-Air DevOps-Intro % git fetch upstream
+tatyana@Tatyanas-MacBook-Air DevOps-Intro % git switch -c bisect-quickn upstream/bug/bisect-me
+branch 'bisect-quickn' set up to track 'upstream/bug/bisect-me'.
+Switched to a new branch 'bisect-quickn'
+tatyana@Tatyanas-MacBook-Air DevOps-Intro % git bisect start
+status: waiting for both good and bad commits
+tatyana@Tatyanas-MacBook-Air DevOps-Intro % git bisect bad  HEAD  
+status: waiting for good commit(s), bad commit known
+tatyana@Tatyanas-MacBook-Air DevOps-Intro % git bisect good v0.0.1
+Bisecting: 1 revision left to test after this (roughly 1 step)
+[f285ede8611e55ac0a7d01100891c0cc775e0709] refactor(store): simplify nextID restoration in load()
+tatyana@Tatyanas-MacBook-Air DevOps-Intro % cd app/
+tatyana@Tatyanas-MacBook-Air app % go build ./...
+tatyana@Tatyanas-MacBook-Air app % go test ./...
+--- FAIL: TestStore_PersistsAcrossReload (0.00s)
+    store_test.go:78: nextID not restored: got 1, want 2
+FAIL
+FAIL    quicknotes      0.478s
+FAIL
+tatyana@Tatyanas-MacBook-Air app % git bisect bad
+Bisecting: 0 revisions left to test after this (roughly 0 steps)
+[cb89bb9ee2ee5010b166061447eaca3ae0da2378] docs(store): comment the load() decode step
+tatyana@Tatyanas-MacBook-Air app % go build ./...
+tatyana@Tatyanas-MacBook-Air app % go test ./... 
+ok      quicknotes      0.621s
+tatyana@Tatyanas-MacBook-Air app % git bisect good
+f285ede8611e55ac0a7d01100891c0cc775e0709 is the first bad commit
+commit f285ede8611e55ac0a7d01100891c0cc775e0709
+Author: Dmitrii Creed <creeed22@gmail.com>
+Date:   Fri Jun 5 13:36:56 2026 +0400
+
+    refactor(store): simplify nextID restoration in load()
+    
+    Signed-off-by: Dmitrii Creed <creeed22@gmail.com>
+
+ app/store.go | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 ```
 
 ### B.2: Automate bisect
 
-Insert the output of:
-
 ```text
-git bisect run sh -c 'cd app && go test ./... && go build ./...'
-git bisect reset
+tatyana@Tatyanas-MacBook-Air DevOps-Intro % git bisect run sh -c 'cd app && go test ./... && go build ./...'
+running 'sh' '-c' 'cd app && go test ./... && go build ./...'
+ok      quicknotes      (cached)
+f285ede8611e55ac0a7d01100891c0cc775e0709 is the first bad commit
+commit f285ede8611e55ac0a7d01100891c0cc775e0709
+Author: Dmitrii Creed <creeed22@gmail.com>
+Date:   Fri Jun 5 13:36:56 2026 +0400
+
+    refactor(store): simplify nextID restoration in load()
+    
+    Signed-off-by: Dmitrii Creed <creeed22@gmail.com>
+
+ app/store.go | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+bisect found first bad commit
+tatyana@Tatyanas-MacBook-Air DevOps-Intro % git bisect reset
+Previous HEAD position was cb89bb9 docs(store): comment the load() decode step
+Switched to branch 'bisect-quickn'
+Your branch is up to date with 'upstream/bug/bisect-me'.
 ```
 
 ### B.3: Document
 
-Insert:
+```text
+tatyana@Tatyanas-MacBook-Air app % git bisect log
+git bisect start
+# status: waiting for both good and bad commits
+# bad: [f0c9243b7c80ebb930a1ce7048a1d65b4c2ac493] docs(app): mention go test invocation
+git bisect bad f0c9243b7c80ebb930a1ce7048a1d65b4c2ac493
+# status: waiting for good commit(s), bad commit known
+# good: [0ec87b808ae6a257a98ecea4a3c8d38a7f2c5ac7] chore(app): document versioning scheme (bisect fixture baseline)
+git bisect good 0ec87b808ae6a257a98ecea4a3c8d38a7f2c5ac7
+# bad: [f285ede8611e55ac0a7d01100891c0cc775e0709] refactor(store): simplify nextID restoration in load()
+git bisect bad f285ede8611e55ac0a7d01100891c0cc775e0709
+# good: [cb89bb9ee2ee5010b166061447eaca3ae0da2378] docs(store): comment the load() decode step
+git bisect good cb89bb9ee2ee5010b166061447eaca3ae0da2378
+# first bad commit: [f285ede8611e55ac0a7d01100891c0cc775e0709] refactor(store): simplify nextID restoration in load()
+tatyana@Tatyanas-MacBook-Air app % git show --no-patch --oneline f285ede8611e55ac0a7d01100891c0cc775e0709
+f285ede refactor(store): simplify nextID restoration in load()
+```
 
-- the full `git bisect log`
-- the offending commit SHA and message
-- 3-4 sentences about how bisect found the bug
+Bisect narrowed the search by splitting the commit range in half and checking the code at each step. I started with a known good tag and a known bad branch head, then Git checked one middle commit and asked me to mark it good or bad based on the test result. After only a few steps, bisect identified the first commit that broke the test, so I did not need to inspect every commit one by one. This is much faster than manual checking when the history is large.
