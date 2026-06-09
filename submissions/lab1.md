@@ -165,3 +165,15 @@ Created and merged a PR into my fork first, so the PR template was loaded from m
 I starred the course repository and the `simple-container-com/api` repository. I also followed the professor, TAs, and several classmates on GitHub.
 
 Starring repositories matters in open source because it helps people save useful projects, shows interest in the project, and gives maintainers more visibility. Following developers helps in team projects and professional growth because you can see their work, learn from their activity, and stay connected with classmates or future collaborators.
+
+## Bonus Task - Branch Protection and Required Signed Commits
+
+### Branch protection rule
+
+![branch-protection-1](branch-protection-1.png)
+![branch-protection-2](branch-protection-2.png)
+![branch-protection-3](branch-protection-3.png)
+
+### Unsigned push rejection
+
+### Reflection
