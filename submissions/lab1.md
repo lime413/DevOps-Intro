@@ -176,4 +176,35 @@ Starring repositories matters in open source because it helps people save useful
 
 ### Unsigned push rejection
 
+tatyana@Tatyanas-MacBook-Air DevOps-Intro % git commit --no-gpg-sign -s --allow-empty -m "test: unsigned commit (should fail)"
+[main 48f62e5] test: unsigned commit (should fail)
+tatyana@Tatyanas-MacBook-Air DevOps-Intro % git log --show-signature -1
+commit 48f62e56e657a283ed26894153bfe4fe39ffb7f3 (HEAD -> main)
+Author: Tatyana Shmykova <limefox413@gmail.com>
+Date:   Tue Jun 9 12:14:33 2026 +0300
+
+    test: unsigned commit (should fail)
+    
+    Signed-off-by: Tatyana Shmykova <limefox413@gmail.com>
+tatyana@Tatyanas-MacBook-Air DevOps-Intro % git push origin main
+Enumerating objects: 1, done.
+Counting objects: 100% (1/1), done.
+Writing objects: 100% (1/1), 227 bytes | 227.00 KiB/s, done.
+Total 1 (delta 0), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: error: GH013: Repository rule violations found for refs/heads/main.
+remote: Review all repository rules at https://github.com/lime413/DevOps-Intro/rules?ref=refs%2Fheads%2Fmain
+remote: 
+remote: - Changes must be made through a pull request.
+remote: 
+remote: - Commits must have verified signatures.
+remote:   Found 1 violation:
+remote: 
+remote:   48f62e56e657a283ed26894153bfe4fe39ffb7f3
+remote: 
+To https://github.com/lime413/DevOps-Intro.git
+ ! [remote rejected] main -> main (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/lime413/DevOps-Intro.git'
+
 ### Reflection
+
+If Knight Capital had branch protection and required signed commits on the production deploy branch, the deploy process would probably have been slower but safer. A broken or incomplete change could not be pushed directly without review rules and a verified author. Required signing would not catch every bug, but it would make it clear who approved and created the production change. This could help the team stop the bad deploy earlier or at least investigate it much faster.
