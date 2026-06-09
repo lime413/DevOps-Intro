@@ -176,6 +176,7 @@ Starring repositories matters in open source because it helps people save useful
 
 ### Unsigned push rejection
 
+```
 tatyana@Tatyanas-MacBook-Air DevOps-Intro % git commit --no-gpg-sign -s --allow-empty -m "test: unsigned commit (should fail)"
 [main 48f62e5] test: unsigned commit (should fail)
 tatyana@Tatyanas-MacBook-Air DevOps-Intro % git log --show-signature -1
@@ -204,6 +205,7 @@ remote:
 To https://github.com/lime413/DevOps-Intro.git
  ! [remote rejected] main -> main (push declined due to repository rule violations)
 error: failed to push some refs to 'https://github.com/lime413/DevOps-Intro.git'
+```
 
 ### Reflection
 
