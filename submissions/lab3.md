@@ -8,11 +8,15 @@ I picked GitHub Actions because the lab uses GitHub by default and the course fl
 
 ## Task 1
 
-### Green CI Run
+### Green CI Runs
 
-Green run after the fix:
+Green run after the deliberate failure was fixed:
 
 https://github.com/lime413/DevOps-Intro/actions/runs/27573596586
+
+Final green run after Task 2 and Bonus changes:
+
+https://github.com/lime413/DevOps-Intro/actions/runs/27575107600
 
 ### Failed Run And Fix
 
@@ -37,6 +41,14 @@ Fix commit:
 Branch protection rule for `main`:
 
 ![Branch protection rule](branch_protection.png)
+
+The required checks are:
+
+- `vet (go 1.23)`
+- `vet (go 1.24)`
+- `test (go 1.23)`
+- `test (go 1.24)`
+- `lint`
 
 ### Design Answers
 
@@ -70,13 +82,23 @@ I used GitHub Actions, so this question does not apply.
 
 Note: this project has no `app/go.sum` file because it has no direct external module dependencies. For this reason, the cache key uses `app/go.mod`, which is the stable input available in this repository.
 
+I also changed `app/go.mod` from `go 1.24` to `go 1.23`. Without this, the Go `1.23` matrix cells were not a real compatibility check with the newer `setup-go` action.
+
 ### Timing Table
 
 | Scenario | Wall-clock |
 | --- | --- |
-| Baseline (no cache, single Go version, no path filter) | TODO |
-| With cache | TODO |
+| Baseline (no cache, single Go version, no path filter) | 70 s |
+| With cache | 77 s |
 | With cache + matrix | 72 s |
+
+Measurement runs:
+
+- Baseline: https://github.com/lime413/DevOps-Intro/actions/runs/27574112361
+- With cache: https://github.com/lime413/DevOps-Intro/actions/runs/27574230082
+- With cache + matrix: https://github.com/lime413/DevOps-Intro/actions/runs/27573596586
+
+The cache-only run was slower than the baseline because the cache was still cold and GitHub runner startup time changed between runs. The important result is not only this one number, but that later runs can reuse the cache.
 
 ### Design Answers
 
@@ -94,8 +116,46 @@ A malicious PR may try to write bad data into a cache and then make protected br
 
 ## Bonus Task
 
-I have not completed the Bonus task yet.
+### Profile
+
+Final bonus run:
+
+https://github.com/lime413/DevOps-Intro/actions/runs/27575107600
+
+Total wall-clock time: 44 s.
+
+| Unit | Runner and actions setup | Dependency setup | Actual work | Cleanup | Unit total |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `vet` | about 1-2 s | about 3-8 s | about 1-9 s | less than 1 s | 21-33 s |
+| `test` | about 1-2 s | about 3-8 s | about 20 s | less than 1 s | 30-34 s |
+| `lint` | about 1-2 s | about 5 s | about 4-21 s | about 1-2 s | 11 s in the latest run |
+
+The test command is slower than the Go output suggests because CI also spends time compiling with the race detector. Lint was the biggest setup problem before the bonus work because `go install` for `golangci-lint` took about 42 s on a cold run.
+
+### Extra Optimizations
+
+1. Cached the `golangci-lint` binary in `~/go/bin/golangci-lint`.
+2. Cached the `golangci-lint` analysis cache in `~/.cache/golangci-lint`.
+3. Added `GOFLAGS=-buildvcs=false`.
+4. Skipped the expensive lint setup when a PR changes only `app/README.md`.
+5. Updated pinned official actions to current full-SHA versions: `checkout` v6.0.3, `setup-go` v6.4.0, and `cache` v5.0.5.
+
+### Before And After
+
+| Optimization applied | Before (s) | After (s) | Saving |
+| --- | ---: | ---: | ---: |
+| Cache `golangci-lint` binary | 42 | 0 | -42 |
+| Cache linter analysis data | 21 | 21 | 0 in this small app |
+| Skip lint for `app/README.md` only | 11 | about 2-4 | about -7 |
+| Total wall-clock | 63 | 44 | -19 |
+
+The total comparison uses the first bonus run before the linter binary cache was warm and the latest run after the cache was warm.
+
+### Bottleneck Analysis
+
+The remaining slow parts are the race-test jobs and lint. They take similar time, and because jobs run in parallel, the slowest one decides the total wall-clock time. To make QuickNotes itself faster, I would reduce expensive race-test setup, split slow tests if the test suite grows, and keep handlers and store tests focused. I would stop optimizing this lab around 45-60 s because GitHub runner startup and action setup are now a large part of the total time. More changes would add complexity without much benefit for such a small app.
 
 ## What Still Needs To Be Done On GitHub
 
-1. Measure the baseline and cache-only timing runs for Task 2.4.
+1. Submit the course PR link in Moodle.
+2. Before final submission, make sure the branch protection rule also has "Require branches to be up to date before merging" checked.
