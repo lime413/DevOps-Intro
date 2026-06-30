@@ -19,7 +19,7 @@
     quicknotes_service_name: quicknotes
     quicknotes_service_description: QuickNotes
     quicknotes_listen_addr: ":8080"
-    quicknotes_restart_sec: 3
+    quicknotes_restart_sec: 4
 
     ansible_pull_repo_url: https://github.com/lime413/DevOps-Intro.git
     ansible_pull_branch: feature/lab7
